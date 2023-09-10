@@ -1,28 +1,79 @@
+/* eslint-disable jsx-a11y/alt-text */
 import { Box, Button, IconButton, Typography, useTheme } from "@mui/material";
 import { tokens } from "../../theme";
 import { mockTransactions } from "../../data/mockData";
+import InputBase from "@mui/material/InputBase";
+import SearchIcon from "@mui/icons-material/Search";
 import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
-import EmailIcon from "@mui/icons-material/Email";
-import PointOfSaleIcon from "@mui/icons-material/PointOfSale";
-import PersonAddIcon from "@mui/icons-material/PersonAdd";
-import TrafficIcon from "@mui/icons-material/Traffic";
+import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
+import QueryStatsIcon from "@mui/icons-material/QueryStats";
+import AddCircleIcon from "@mui/icons-material/AddCircle";
+import DirectionsTransitIcon from "@mui/icons-material/DirectionsTransit";
 import Header from "../../components/Header";
 import LineChart from "../../components/LineChart";
-import GeographyChart from "../../components/GeographyChart";
-import BarChart from "../../components/BarChart";
 import StatBox from "../../components/StatBox";
-import ProgressCircle from "../../components/ProgressCircle";
+import React, { useState, useEffect } from "react";
 
 const Dashboard = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+  const image_array = [
+    "https://www.sansiri.com/uploads/gallery/2023/04/03/250_xt-phayathai-gallery-03.jpg",
+    "https://www.sansiri.com/uploads/project/2022/04/26/450_the-line-vibe-project-thumbnail-800x501.webp",
+    "https://www.thaiembassy.com/wp-content/uploads/2022/07/Buying-a-Condominium-in-Bangkok.jpg",
+    "https://www.sansiri.com/uploads/project/2022/12/07/450_project-thumbnail-800x501.jpg",
+    "https://www.escapeartist.com/realestate/wp-content/uploads/2017/02/Thailand-condo.jpg",
+    "https://www.christiesrealestate.com/localimagereader.ashx?imageurl=http%3A%2F%2FRealEstateAdminImages.gabriels.net%2F170%2F82542%2F170-_DSC067020190316025155508-688.jpg&imagecache=true",
+    "https://a0.muscache.com/im/pictures/48b53574-a08d-45d6-a6c3-447f2cc60b1f.jpg?im_w=720",
+    "https://www.rentbangkokcondos.com/wp-content/uploads/2015/01/The-Lofts-Condo-Ekkamai.jpg",
+    "https://www.elitehomes.co.th/wp-content/uploads/2021/04/banner-2-1.jpg",
+    "https://media.timeout.com/images/105458169/750/562/image.jpg",
+  ];
+
+  const [properties, setProperties] = useState([]);
+  const [inputText, setInputText] = useState("Bang Kapi");
+  let inputHandler = (e) => {
+    if (e.target.value.length > 2) {
+      setInputText(e.target.value);
+    }
+  };
+  useEffect(() => {
+    fetch("http://localhost:5000/properties?search=" + encodeURI(inputText))
+      .then((response) => response.json())
+      .then((data) => {
+        setProperties(data);
+      })
+      .catch((err) => {
+        console.log(err.message);
+      });
+  }, [inputText]);
+
+  const property = properties[0];
+
+  const randomNumberInRange = (min, max) => {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  };
 
   return (
     <Box m="20px">
       {/* HEADER */}
       <Box display="flex" justifyContent="space-between" alignItems="center">
         <Header title="DASHBOARD" subtitle="Welcome to your dashboard" />
-
+        <Box
+          display="flex"
+          backgroundColor={colors.primary[400]}
+          borderRadius="3px"
+          sx={{ width: "70%" }}
+        >
+          <InputBase
+            sx={{ ml: 2, flex: 1 }}
+            placeholder="Search"
+            onChange={inputHandler}
+          />
+          <IconButton type="button" sx={{ p: 1 }}>
+            <SearchIcon />
+          </IconButton>
+        </Box>
         <Box>
           <Button
             sx={{
@@ -48,23 +99,114 @@ const Dashboard = () => {
       >
         {/* ROW 1 */}
         <Box
+          gridColumn="span 7"
+          gridRow="span 3"
+          backgroundColor={colors.primary[400]}
+          p="30px"
+        >
+          <Typography variant="h5" fontWeight="600">
+            {property && property.Condo_NAME_EN}
+          </Typography>
+          <Box
+            display="flex"
+            flexDirection="column"
+            alignItems="center"
+            mt="25px"
+          >
+            <img
+              width="500"
+              height="350"
+              src={image_array[randomNumberInRange(0, 9)]}
+            />
+          </Box>
+        </Box>
+        <Box
+          gridColumn="span 5"
+          gridRow="span 2"
+          backgroundColor={colors.primary[400]}
+          p="30px"
+        >
+          <Typography variant="h5" fontWeight="600">
+            Details
+          </Typography>
+          {property && (
+            <Box
+              display="flex"
+              flexDirection="column"
+              alignItems="left"
+              mt="50px"
+            >
+              <Typography variant="h5">
+                Address : {property["Address_TH"]}
+              </Typography>
+              <Typography variant="h5">
+                Area : {property["Area_m2"] + " m²"}
+              </Typography>
+              <Typography variant="h5">
+                District : {property["Condo_area"]}
+              </Typography>
+              <Typography variant="h5">
+                Year built : {property["Year_built"]}
+              </Typography>
+              <Typography variant="h5">
+                #_Floor : {property["#_Floor"]}
+              </Typography>
+              <Typography variant="h5">
+                #_Tower : {property["#_Tower"]}
+              </Typography>
+            </Box>
+          )}
+        </Box>
+        <Box
+          gridColumn="span 5"
+          gridRow="span 1"
+          backgroundColor={colors.primary[400]}
+          p="30px"
+        >
+          <Typography variant="h5" fontWeight="600">
+            Contacts
+          </Typography>
+          {property && (
+            <Box
+              display="flex"
+              flexDirection="column"
+              alignItems="left"
+              mt="25px"
+            >
+              <Typography>
+                HipFlat :{" "}
+                <a
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  href={property["Condo_link"]}
+                  style={{ color: "#a87932" }}
+                >
+                  {property["Condo_link"]}
+                </a>
+              </Typography>
+            </Box>
+          )}
+        </Box>
+        {/* ROW 2 */}
+        <Box
           gridColumn="span 3"
           backgroundColor={colors.primary[400]}
           display="flex"
           alignItems="center"
           justifyContent="center"
         >
-          <StatBox
-            title="12,361"
-            subtitle="Emails Sent"
-            progress="0.75"
-            increase="+14%"
-            icon={
-              <EmailIcon
-                sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
-              />
-            }
-          />
+          {property && (
+            <StatBox
+              title={property["Sale_Price_Sqm"].toLocaleString() + " ฿"}
+              subtitle="Price (m²)"
+              increase={"+" + property["Sale_Price_Inc[Year]"] + "%"}
+              icon={
+                <AttachMoneyIcon
+                  sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
+                />
+              }
+            />
+          )}
         </Box>
         <Box
           gridColumn="span 3"
@@ -73,17 +215,17 @@ const Dashboard = () => {
           alignItems="center"
           justifyContent="center"
         >
-          <StatBox
-            title="431,225"
-            subtitle="Sales Obtained"
-            progress="0.50"
-            increase="+21%"
-            icon={
-              <PointOfSaleIcon
-                sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
-              />
-            }
-          />
+          {property && (
+            <StatBox
+              title={property["MinDist_Station"].toLocaleString() + " m"}
+              subtitle="Distance to transport"
+              icon={
+                <DirectionsTransitIcon
+                  sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
+                />
+              }
+            />
+          )}
         </Box>
         <Box
           gridColumn="span 3"
@@ -92,17 +234,19 @@ const Dashboard = () => {
           alignItems="center"
           justifyContent="center"
         >
-          <StatBox
-            title="32,441"
-            subtitle="New Clients"
-            progress="0.30"
-            increase="+5%"
-            icon={
-              <PersonAddIcon
-                sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
-              />
-            }
-          />
+          {property && (
+            <StatBox
+              title={property["Rental_Yield"] + "%"}
+              subtitle="Rental yield"
+              progress={property["Rental_Yield"] * 0.01}
+              increase={property["Rental_Yield_Inc[Year]"] + "%"}
+              icon={
+                <AddCircleIcon
+                  sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
+                />
+              }
+            />
+          )}
         </Box>
         <Box
           gridColumn="span 3"
@@ -111,20 +255,21 @@ const Dashboard = () => {
           alignItems="center"
           justifyContent="center"
         >
-          <StatBox
-            title="1,325,134"
-            subtitle="Traffic Received"
-            progress="0.80"
-            increase="+43%"
-            icon={
-              <TrafficIcon
-                sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
-              />
-            }
-          />
+          {property && (
+            <StatBox
+              title={randomNumberInRange(1, 100000).toLocaleString()}
+              subtitle="Search/month"
+              increase={"+" + randomNumberInRange(1, 20) + "%"}
+              icon={
+                <QueryStatsIcon
+                  sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
+                />
+              }
+            />
+          )}
         </Box>
 
-        {/* ROW 2 */}
+        {/* ROW 3 */}
         <Box
           gridColumn="span 8"
           gridRow="span 2"
@@ -214,67 +359,6 @@ const Dashboard = () => {
               </Box>
             </Box>
           ))}
-        </Box>
-
-        {/* ROW 3 */}
-        <Box
-          gridColumn="span 4"
-          gridRow="span 2"
-          backgroundColor={colors.primary[400]}
-          p="30px"
-        >
-          <Typography variant="h5" fontWeight="600">
-            Campaign
-          </Typography>
-          <Box
-            display="flex"
-            flexDirection="column"
-            alignItems="center"
-            mt="25px"
-          >
-            <ProgressCircle size="125" />
-            <Typography
-              variant="h5"
-              color={colors.greenAccent[500]}
-              sx={{ mt: "15px" }}
-            >
-              $48,352 revenue generated
-            </Typography>
-            <Typography>Includes extra misc expenditures and costs</Typography>
-          </Box>
-        </Box>
-        <Box
-          gridColumn="span 4"
-          gridRow="span 2"
-          backgroundColor={colors.primary[400]}
-        >
-          <Typography
-            variant="h5"
-            fontWeight="600"
-            sx={{ padding: "30px 30px 0 30px" }}
-          >
-            Sales Quantity
-          </Typography>
-          <Box height="250px" mt="-20px">
-            <BarChart isDashboard={true} />
-          </Box>
-        </Box>
-        <Box
-          gridColumn="span 4"
-          gridRow="span 2"
-          backgroundColor={colors.primary[400]}
-          padding="30px"
-        >
-          <Typography
-            variant="h5"
-            fontWeight="600"
-            sx={{ marginBottom: "15px" }}
-          >
-            Geography Based Traffic
-          </Typography>
-          <Box height="200px">
-            <GeographyChart isDashboard={true} />
-          </Box>
         </Box>
       </Box>
     </Box>
