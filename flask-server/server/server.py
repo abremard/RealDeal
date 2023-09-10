@@ -1,6 +1,7 @@
 from flask import Flask, request
 import pandas as pd 
 from json import loads
+import flask
 
 app = Flask(__name__)
 
@@ -31,7 +32,10 @@ def single_property():
     ])
     text_filters = text_filters if args.get('search') else True
     properties = dataset[filters & (text_filters)] if args else dataset
-    return build_response_body(properties)
+    response = flask.jsonify(build_response_body(properties))
+    response.headers.add('Access-Control-Allow-Origin', '*')
+
+    return response
 
 def build_min_max_filters(dataset, filters, args, params_dict):
     for param in params_dict:
@@ -59,7 +63,7 @@ def load_dataset():
     return pd.read_csv("../dataset/cleaned/bangkok-condo-dataset.csv")
 
 def build_response_body(dataframe):
-    return loads(dataframe.to_json(orient="records"))
+    return loads(dataframe.to_json(orient="records", force_ascii=False))
 
 if __name__ == "__main__":
     app.run(debug=True)
