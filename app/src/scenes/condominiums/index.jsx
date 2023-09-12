@@ -63,50 +63,14 @@ const Condominium = () => {
       });
   }, [property]);
 
-  const avg = (series, property) => {
-    return Math.round(
-      series.reduce((a, b) => a + b[property], 0) / series.length || 0
-    );
-  };
-
-  const asc = (series, property) =>
-    series.sort((a, b) => a[property] - b[property]);
-
-  const quantile = (series, property, q) => {
-    const sorted = asc(series, property);
-    const pos = (sorted.length - 1) * q;
-    const base = Math.floor(pos);
-    const rest = pos - base;
-    if (sorted[base + 1] !== undefined) {
-      return (
-        sorted[base][property] +
-        rest * (sorted[base + 1][property] - sorted[base][property])
-      );
-    } else {
-      return sorted[base][property];
-    }
-  };
-
-  const q25 = (series, property) => quantile(series, property, 0.25);
-
-  const q50 = (series, property) => quantile(series, property, 0.5);
-
-  const q75 = (series, property) => quantile(series, property, 0.75);
-
-  const iq = (series, property) =>
-    q75(series, property) - q25(series, property);
-
-  const lowest = (series, property) =>
-    avg(series, property) - iq(series, property);
-
-  const highest = (series, property) =>
-    avg(series, property) + iq(series, property);
-
-  const median = (series, property) => q50(series, property);
-
   const randomNumberInRange = (min, max) => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
   };
+
+  const mockTrafficData = [];
+  for (let i = 0; i < 100; i++) {
+    mockTrafficData.push({ traffic: randomNumberInRange(1, 100000) });
+  }
 
   return (
     <Box m="20px">
@@ -254,21 +218,7 @@ const Condominium = () => {
         >
           {property && edaProperties.length > 0 && (
             <StatBox
-              title={
-                property["Sale_Price_Sqm"].toLocaleString() +
-                " ฿ |" +
-                avg(edaProperties, "Sale_Price_Sqm") +
-                "|" +
-                lowest(edaProperties, "Sale_Price_Sqm") +
-                "|" +
-                highest(edaProperties, "Sale_Price_Sqm") +
-                "|" +
-                q25(edaProperties, "Sale_Price_Sqm") +
-                "|" +
-                median(edaProperties, "Sale_Price_Sqm") +
-                "|" +
-                q75(edaProperties, "Sale_Price_Sqm")
-              }
+              title={property["Sale_Price_Sqm"].toLocaleString() + " ฿"}
               subtitle="Price (m²)"
               increase={"+" + property["Sale_Price_Inc[Year]"] + "%"}
               icon={
@@ -276,6 +226,8 @@ const Condominium = () => {
                   sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
                 />
               }
+              property="Sale_Price_Sqm"
+              statsArray={edaProperties}
             />
           )}
         </Box>
@@ -295,6 +247,8 @@ const Condominium = () => {
                   sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
                 />
               }
+              property="MinDist_Station"
+              statsArray={edaProperties}
             />
           )}
         </Box>
@@ -316,6 +270,8 @@ const Condominium = () => {
                   sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
                 />
               }
+              property="Rental_Yield"
+              statsArray={edaProperties}
             />
           )}
         </Box>
@@ -336,6 +292,8 @@ const Condominium = () => {
                   sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
                 />
               }
+              property="traffic"
+              statsArray={mockTrafficData}
             />
           )}
         </Box>
