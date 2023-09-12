@@ -12,6 +12,10 @@ import DirectionsTransitIcon from "@mui/icons-material/DirectionsTransit";
 import Header from "../../components/Header";
 import LineChart from "../../components/LineChart";
 import StatBox from "../../components/StatBox";
+import FormControl from "@mui/material/FormControl";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import Select from "@mui/material/Select";
 import React, { useState, useEffect } from "react";
 
 const Condominium = () => {
@@ -39,6 +43,12 @@ const Condominium = () => {
       setInputText(e.target.value);
     }
   };
+
+  const [granularity, setGranularity] = React.useState("Condo_area");
+  const handleChange = (e) => {
+    setGranularity(e.target.value);
+  };
+
   useEffect(() => {
     fetch("http://localhost:5000/properties?search=" + encodeURI(inputText))
       .then((response) => response.json())
@@ -50,10 +60,11 @@ const Condominium = () => {
       });
   }, [inputText]);
   useEffect(() => {
-    fetch(
-      "http://localhost:5000/properties?search=" +
-        encodeURI(property["Condo_area"])
-    )
+    const searchToken =
+      granularity === "City"
+        ? ""
+        : "?search=" + encodeURI(property[granularity]);
+    fetch("http://localhost:5000/properties" + searchToken)
       .then((response) => response.json())
       .then((data) => {
         setEdaProperties(data);
@@ -61,7 +72,7 @@ const Condominium = () => {
       .catch((err) => {
         console.log(err.message);
       });
-  }, [property]);
+  }, [property, granularity]);
 
   const randomNumberInRange = (min, max) => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -84,7 +95,7 @@ const Condominium = () => {
           display="flex"
           backgroundColor={colors.primary[400]}
           borderRadius="3px"
-          sx={{ width: "70%" }}
+          sx={{ width: "40%" }}
         >
           <InputBase
             sx={{ ml: 2, flex: 1 }}
@@ -94,6 +105,21 @@ const Condominium = () => {
           <IconButton type="button" sx={{ p: 1 }}>
             <SearchIcon />
           </IconButton>
+        </Box>
+        <Box>
+          <FormControl fullWidth>
+            <InputLabel id="granularity-input">Granularity</InputLabel>
+            <Select
+              labelId="granularity-select-label"
+              id="granularity-select"
+              value={granularity}
+              label="Granularity"
+              onChange={handleChange}
+            >
+              <MenuItem value={"Condo_area"}>Condo_area</MenuItem>
+              <MenuItem value={"City"}>City</MenuItem>
+            </Select>
+          </FormControl>
         </Box>
         <Box>
           <Button

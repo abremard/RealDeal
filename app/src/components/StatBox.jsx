@@ -48,10 +48,10 @@ const StatBox = ({
     q75(series, property) - q25(series, property);
 
   const lowest = (series, property) =>
-    avg(series, property) - iq(series, property) / 2;
+    Number(avg(series, property) - iq(series, property) / 2).toFixed(2);
 
   const highest = (series, property) =>
-    avg(series, property) + iq(series, property) / 2;
+    Number(avg(series, property) + iq(series, property) / 2).toFixed(2);
 
   const median = (series, property) => q50(series, property);
 
@@ -68,7 +68,7 @@ const StatBox = ({
             {title}
           </Typography>
         </Box>
-        {property && statsArray && (
+        {property && statsArray.length > 0 && (
           <Box>
             <Typography>
               {avg(statsArray, property) +
