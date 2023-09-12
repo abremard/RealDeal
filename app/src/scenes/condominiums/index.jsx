@@ -14,7 +14,7 @@ import LineChart from "../../components/LineChart";
 import StatBox from "../../components/StatBox";
 import React, { useState, useEffect } from "react";
 
-const Dashboard = () => {
+const Condominium = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const image_array = [
@@ -30,7 +30,9 @@ const Dashboard = () => {
     "https://media.timeout.com/images/105458169/750/562/image.jpg",
   ];
 
-  const [properties, setProperties] = useState([]);
+  const [property, setProperty] = useState(false);
+  const [edaProperties, setEdaProperties] = useState([]);
+
   const [inputText, setInputText] = useState("Bang Kapi");
   let inputHandler = (e) => {
     if (e.target.value.length > 2) {
@@ -41,14 +43,66 @@ const Dashboard = () => {
     fetch("http://localhost:5000/properties?search=" + encodeURI(inputText))
       .then((response) => response.json())
       .then((data) => {
-        setProperties(data);
+        setProperty(data[0]);
       })
       .catch((err) => {
         console.log(err.message);
       });
   }, [inputText]);
+  useEffect(() => {
+    fetch(
+      "http://localhost:5000/properties?search=" +
+        encodeURI(property["Condo_area"])
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        setEdaProperties(data);
+      })
+      .catch((err) => {
+        console.log(err.message);
+      });
+  }, [property]);
 
-  const property = properties[0];
+  const avg = (series, property) => {
+    return Math.round(
+      series.reduce((a, b) => a + b[property], 0) / series.length || 0
+    );
+  };
+
+  const asc = (series, property) =>
+    series.sort((a, b) => a[property] - b[property]);
+
+  const quantile = (series, property, q) => {
+    const sorted = asc(series, property);
+    const pos = (sorted.length - 1) * q;
+    const base = Math.floor(pos);
+    const rest = pos - base;
+    if (sorted[base + 1] !== undefined) {
+      return (
+        sorted[base][property] +
+        rest * (sorted[base + 1][property] - sorted[base][property])
+      );
+    } else {
+      return sorted[base][property];
+    }
+  };
+
+  const q25 = (series, property) => quantile(series, property, 0.25);
+
+  const q50 = (series, property) => quantile(series, property, 0.5);
+
+  const q75 = (series, property) => quantile(series, property, 0.75);
+
+  const iq = (series, property) =>
+    q75(series, property) - q25(series, property);
+
+  const lowest = (series, property) =>
+    avg(series, property) - iq(series, property);
+
+  const highest = (series, property) =>
+    avg(series, property) + iq(series, property);
+
+  const median = (series, property) => q50(series, property);
 
   const randomNumberInRange = (min, max) => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -198,9 +252,23 @@ const Dashboard = () => {
           alignItems="center"
           justifyContent="center"
         >
-          {property && (
+          {property && edaProperties.length > 0 && (
             <StatBox
-              title={property["Sale_Price_Sqm"].toLocaleString() + " ฿"}
+              title={
+                property["Sale_Price_Sqm"].toLocaleString() +
+                " ฿ |" +
+                avg(edaProperties, "Sale_Price_Sqm") +
+                "|" +
+                lowest(edaProperties, "Sale_Price_Sqm") +
+                "|" +
+                highest(edaProperties, "Sale_Price_Sqm") +
+                "|" +
+                q25(edaProperties, "Sale_Price_Sqm") +
+                "|" +
+                median(edaProperties, "Sale_Price_Sqm") +
+                "|" +
+                q75(edaProperties, "Sale_Price_Sqm")
+              }
               subtitle="Price (m²)"
               increase={"+" + property["Sale_Price_Inc[Year]"] + "%"}
               icon={
@@ -368,4 +436,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default Condominium;

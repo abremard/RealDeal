@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Routes, Route } from "react-router-dom";
 import Sidebar from "./scenes/global/Sidebar";
-import Dashboard from "./scenes/dashboard";
+import Condominium from "./scenes/condominiums";
 import Team from "./scenes/team";
 import Invoices from "./scenes/invoices";
 import Contacts from "./scenes/contacts";
@@ -27,7 +27,7 @@ function App() {
           <Sidebar isSidebar={isSidebar} />
           <main className="content">
             <Routes>
-              <Route path="/" element={<Dashboard />} />
+              <Route path="/" element={<Condominium />} />
               <Route path="/team" element={<Team />} />
               <Route path="/contacts" element={<Contacts />} />
               <Route path="/invoices" element={<Invoices />} />
