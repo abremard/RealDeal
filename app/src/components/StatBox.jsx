@@ -1,6 +1,10 @@
 import { Box, Typography, useTheme } from "@mui/material";
 import { tokens } from "../theme";
 import ProgressCircle from "./ProgressCircle";
+import GaugeChart from "react-gauge-chart";
+import Stack from "@mui/material/Stack";
+import Paper from "@mui/material/Paper";
+import { styled } from "@mui/material/styles";
 
 const StatBox = ({
   title,
@@ -9,7 +13,9 @@ const StatBox = ({
   progress,
   increase,
   property,
+  value,
   statsArray,
+  increasing = true,
 }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
@@ -55,42 +61,20 @@ const StatBox = ({
 
   const median = (series, property) => q50(series, property);
 
+  const gaugeColors = increasing
+    ? ["#C63D2F", "#A8DF8E"]
+    : ["#A8DF8E", "#C63D2F"];
+
+  const Item = styled(Paper)(({ theme }) => ({
+    backgroundColor: theme.palette.mode === "dark" ? "#1A2027" : "#fff",
+    ...theme.typography.body2,
+    padding: theme.spacing(1),
+    textAlign: "center",
+    color: theme.palette.text.secondary,
+  }));
+
   return (
     <Box width="100%" m="0 30px">
-      <Box display="flex" justifyContent="space-between">
-        <Box>
-          {icon}
-          <Typography
-            variant="h4"
-            fontWeight="bold"
-            sx={{ color: colors.grey[100] }}
-          >
-            {title}
-          </Typography>
-        </Box>
-        {property && statsArray.length > 0 && (
-          <Box>
-            <Typography>
-              {avg(statsArray, property) +
-                "|" +
-                lowest(statsArray, property) +
-                "|" +
-                highest(statsArray, property) +
-                "|" +
-                q25(statsArray, property) +
-                "|" +
-                median(statsArray, property) +
-                "|" +
-                q75(statsArray, property)}
-            </Typography>
-          </Box>
-        )}
-        {progress && (
-          <Box>
-            <ProgressCircle progress={progress} />
-          </Box>
-        )}
-      </Box>
       <Box display="flex" justifyContent="space-between" mt="2px">
         <Typography variant="h5" sx={{ color: colors.greenAccent[500] }}>
           {subtitle}
@@ -102,6 +86,41 @@ const StatBox = ({
         >
           {increase}
         </Typography>
+      </Box>
+      <Box display="flex" justifyContent="space-between">
+        <Box>{icon}</Box>
+        {property && statsArray.length > 0 && (
+          <Box display="flex" justifyContent="center">
+            <GaugeChart
+              id="gauge-chart3"
+              nrOfLevels={30}
+              colors={gaugeColors}
+              arcWidth={0.3}
+              percent={
+                value / Math.max(...statsArray.map((stat) => stat[property]))
+              }
+              formatTextValue={(_) => title}
+              style={{ width: 200 }}
+            />
+          </Box>
+        )}
+        {progress && (
+          <Box>
+            <ProgressCircle progress={progress} />
+          </Box>
+        )}
+      </Box>
+      <Box display="flex" justifyContent="center">
+        {property && statsArray.length > 0 && (
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            spacing={{ xs: 1, sm: 2, md: 4 }}
+          >
+            <Item>{q25(statsArray, property)}</Item>
+            <Item>{median(statsArray, property)}</Item>
+            <Item>{q75(statsArray, property)}</Item>
+          </Stack>
+        )}
       </Box>
     </Box>
   );
