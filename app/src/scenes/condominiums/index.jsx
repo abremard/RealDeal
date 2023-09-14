@@ -83,6 +83,9 @@ const Condominium = () => {
     mockTrafficData.push({ traffic: randomNumberInRange(1, 100000) });
   }
 
+  const traffic = randomNumberInRange(1, 100000);
+  const trafficProgress = randomNumberInRange(1, 20);
+
   return (
     <Box m="20px">
       {/* HEADER */}
@@ -237,6 +240,7 @@ const Condominium = () => {
         {/* ROW 2 */}
         <Box
           gridColumn="span 3"
+          gridRow="span 2"
           backgroundColor={colors.primary[400]}
           display="flex"
           alignItems="center"
@@ -247,18 +251,22 @@ const Condominium = () => {
               title={property["Sale_Price_Sqm"].toLocaleString() + " ฿"}
               subtitle="Price (m²)"
               increase={"+" + property["Sale_Price_Inc[Year]"] + "%"}
+              progress={property["Sale_Price_Inc[Year]"] * 0.01}
               icon={
                 <AttachMoneyIcon
                   sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
                 />
               }
               property="Sale_Price_Sqm"
+              value={property["Sale_Price_Sqm"]}
               statsArray={edaProperties}
+              increasing={false}
             />
           )}
         </Box>
         <Box
           gridColumn="span 3"
+          gridRow="span 2"
           backgroundColor={colors.primary[400]}
           display="flex"
           alignItems="center"
@@ -274,12 +282,17 @@ const Condominium = () => {
                 />
               }
               property="MinDist_Station"
+              value={property["MinDist_Station"]}
+              increase={"0%"}
+              progress={"0"}
               statsArray={edaProperties}
+              increasing={false}
             />
           )}
         </Box>
         <Box
           gridColumn="span 3"
+          gridRow="span 2"
           backgroundColor={colors.primary[400]}
           display="flex"
           alignItems="center"
@@ -297,12 +310,14 @@ const Condominium = () => {
                 />
               }
               property="Rental_Yield"
+              value={property["Rental_Yield"]}
               statsArray={edaProperties}
             />
           )}
         </Box>
         <Box
           gridColumn="span 3"
+          gridRow="span 2"
           backgroundColor={colors.primary[400]}
           display="flex"
           alignItems="center"
@@ -310,15 +325,17 @@ const Condominium = () => {
         >
           {property && (
             <StatBox
-              title={randomNumberInRange(1, 100000).toLocaleString()}
+              title={traffic.toLocaleString()}
               subtitle="Search/month"
-              increase={"+" + randomNumberInRange(1, 20) + "%"}
+              increase={"+" + trafficProgress + "%"}
+              progress={trafficProgress * 0.01}
               icon={
                 <QueryStatsIcon
                   sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
                 />
               }
               property="traffic"
+              value={traffic}
               statsArray={mockTrafficData}
             />
           )}
