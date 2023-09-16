@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/alt-text */
 import { Box, Button, IconButton, Typography, useTheme } from "@mui/material";
 import { tokens } from "../../theme";
-import { mockTransactions } from "../../data/mockData";
+import { mockLineData, mockTransactions } from "../../data/mockData";
 import InputBase from "@mui/material/InputBase";
 import SearchIcon from "@mui/icons-material/Search";
 import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
@@ -36,6 +36,8 @@ const Condominium = () => {
 
   const [property, setProperty] = useState(false);
   const [edaProperties, setEdaProperties] = useState([]);
+  const [bkkDemography, setBkkDemography] = useState([]);
+  const [demography, setDemography] = useState([]);
 
   const [inputText, setInputText] = useState("Bang Kapi");
   let inputHandler = (e) => {
@@ -73,6 +75,52 @@ const Condominium = () => {
         console.log(err.message);
       });
   }, [property, granularity]);
+  useEffect(() => {
+    const searchToken = "?district=" + encodeURI(property["Condo_area"]);
+    fetch("http://localhost:5000/demography" + searchToken)
+      .then((response) => response.json())
+      .then((data) => {
+        setDemography(data);
+      })
+      .catch((err) => {
+        console.log(err.message);
+      });
+  }, [property]);
+  useEffect(() => {
+    fetch("http://localhost:5000/demography/all")
+      .then((response) => response.json())
+      .then((data) => {
+        setBkkDemography(data);
+      })
+      .catch((err) => {
+        console.log(err.message);
+      });
+  }, [property]);
+
+  const computeDiff = (data, sliceStart = 0, sliceEnd = 100) => {
+    if (data.length > 0) {
+      return data.slice(sliceStart, sliceEnd).map((el) => {
+        return {
+          ...el,
+          y: ((el.y - data[sliceStart].y) * sliceEnd) / data[sliceStart].y,
+        };
+      });
+    }
+    return data;
+  };
+
+  const graph_data = [
+    {
+      id: "Bangkok",
+      color: tokens("dark").blueAccent[300],
+      data: computeDiff(bkkDemography, 40, 100),
+    },
+    {
+      id: property["Condo_area"],
+      color: tokens("dark").greenAccent[500],
+      data: computeDiff(demography, 40, 100),
+    },
+  ];
 
   const randomNumberInRange = (min, max) => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -119,7 +167,7 @@ const Condominium = () => {
               label="Granularity"
               onChange={handleChange}
             >
-              <MenuItem value={"Condo_area"}>Condo_area</MenuItem>
+              <MenuItem value={"Condo_area"}>District</MenuItem>
               <MenuItem value={"City"}>City</MenuItem>
             </Select>
           </FormControl>
@@ -360,14 +408,7 @@ const Condominium = () => {
                 fontWeight="600"
                 color={colors.grey[100]}
               >
-                Revenue Generated
-              </Typography>
-              <Typography
-                variant="h3"
-                fontWeight="bold"
-                color={colors.greenAccent[500]}
-              >
-                $59,342.32
+                Population evolution (%)
               </Typography>
             </Box>
             <Box>
@@ -379,7 +420,7 @@ const Condominium = () => {
             </Box>
           </Box>
           <Box height="250px" m="-20px 0 0 0">
-            <LineChart isDashboard={true} />
+            <LineChart data={graph_data} isDashboard={true} />
           </Box>
         </Box>
         <Box
