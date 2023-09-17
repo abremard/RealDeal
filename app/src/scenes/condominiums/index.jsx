@@ -1,7 +1,6 @@
 /* eslint-disable jsx-a11y/alt-text */
 import { Box, Button, IconButton, Typography, useTheme } from "@mui/material";
 import { tokens } from "../../theme";
-import { mockTransactions } from "../../data/mockData";
 import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import QueryStatsIcon from "@mui/icons-material/QueryStats";
@@ -9,6 +8,12 @@ import AddCircleIcon from "@mui/icons-material/AddCircle";
 import DirectionsTransitIcon from "@mui/icons-material/DirectionsTransit";
 import Header from "../../components/Header";
 import LineChart from "../../components/LineChart";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableRow from "@mui/material/TableRow";
+import Paper from "@mui/material/Paper";
 import StatBox from "../../components/StatBox";
 import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
@@ -44,7 +49,17 @@ const Condominium = () => {
   const [bkkDemography, setBkkDemography] = useState([]);
   const [demography, setDemography] = useState([]);
   const [condoId, setCondoId] = useState(1);
-  const [mortageProps, setMortgageProps] = useState({});
+  const [mortageParams, setMortgageParams] = useState({
+    price: 5000000.0,
+    rent: 35000.0,
+    monthly_expenses: 17500.0,
+    down_payment: 1000000.0,
+    appreciation: 0.04,
+    interest_rate: 0.05,
+    mortgage_duration: 30,
+    ROI_duration: 12,
+  });
+  const [mortageProps, setMortgageProps] = useState(undefined);
 
   let inputHandler = (e) => {
     const selectedCondo = e.target.innerText;
@@ -52,6 +67,13 @@ const Condominium = () => {
       (property) => property.label === selectedCondo
     )[0].id;
     setCondoId(selectedCondoId);
+  };
+
+  let mortgageInputHandler = (e, prop) => {
+    setMortgageParams({
+      ...mortageParams,
+      [prop]: parseFloat(e.target.value.replace(/[^0-9-.]/g, "")),
+    });
   };
 
   const [granularity, setGranularity] = React.useState("Condo_area");
@@ -119,32 +141,23 @@ const Condominium = () => {
       });
   }, []);
   useEffect(() => {
-    const price = 11500000;
-    const rent = 35000;
-    const monthly_expenses = 17500;
-    const down_payment = 500000;
-    const appreciation = 0.04;
-    const interest_rate = 0.05;
-    const mortgage_duration = 30;
-    const ROI_duration = 12;
-
     fetch(
       "http://localhost:5000/mortgage?price=" +
-        price +
+        mortageParams.price +
         "&rent=" +
-        rent +
+        mortageParams.rent +
         "&monthly_expenses=" +
-        monthly_expenses +
+        mortageParams.monthly_expenses +
         "&down_payment=" +
-        down_payment +
+        mortageParams.down_payment +
         "&appreciation=" +
-        appreciation +
+        mortageParams.appreciation +
         "&interest_rate=" +
-        interest_rate +
+        mortageParams.interest_rate +
         "&mortgage_duration=" +
-        mortgage_duration +
+        mortageParams.mortgage_duration +
         "&ROI_duration=" +
-        ROI_duration
+        mortageParams.ROI_duration
     )
       .then((response) => response.json())
       .then((data) => {
@@ -153,8 +166,7 @@ const Condominium = () => {
       .catch((err) => {
         console.log(err.message);
       });
-  }, []);
-  console.log(mortageProps);
+  }, [mortageParams]);
 
   const computeDiff = (data, sliceStart = 0, sliceEnd = 100) => {
     if (data.length > 0) {
@@ -455,7 +467,7 @@ const Condominium = () => {
         {/* ROW 3 */}
         <Box
           gridColumn="span 8"
-          gridRow="span 2"
+          gridRow="span 3"
           backgroundColor={colors.primary[400]}
         >
           <Box
@@ -482,13 +494,13 @@ const Condominium = () => {
               </IconButton>
             </Box>
           </Box>
-          <Box height="250px" m="-20px 0 0 0">
+          <Box height="400px" m="-20px 0 0 0">
             <LineChart data={graph_data} isDashboard={true} />
           </Box>
         </Box>
         <Box
           gridColumn="span 4"
-          gridRow="span 2"
+          gridRow="span 3"
           backgroundColor={colors.primary[400]}
           overflow="auto"
         >
@@ -501,40 +513,175 @@ const Condominium = () => {
             p="15px"
           >
             <Typography color={colors.grey[100]} variant="h5" fontWeight="600">
-              Recent Transactions
+              Mortgage calculator
             </Typography>
+            <IconButton>
+              <DownloadOutlinedIcon
+                sx={{ fontSize: "26px", color: colors.greenAccent[500] }}
+              />
+            </IconButton>
           </Box>
-          {mockTransactions.map((transaction, i) => (
-            <Box
-              key={`${transaction.txId}-${i}`}
-              display="flex"
-              justifyContent="space-between"
-              alignItems="center"
-              borderBottom={`4px solid ${colors.primary[500]}`}
-              p="15px"
-            >
-              <Box>
-                <Typography
-                  color={colors.greenAccent[500]}
-                  variant="h5"
-                  fontWeight="600"
-                >
-                  {transaction.txId}
-                </Typography>
-                <Typography color={colors.grey[100]}>
-                  {transaction.user}
-                </Typography>
-              </Box>
-              <Box color={colors.grey[100]}>{transaction.date}</Box>
-              <Box
-                backgroundColor={colors.greenAccent[500]}
-                p="5px 10px"
-                borderRadius="4px"
-              >
-                ${transaction.cost}
-              </Box>
+          <Box p="15px">
+            <TextField
+              id="price-input"
+              label="Unit price"
+              variant="standard"
+              defaultValue={mortageParams.price.toLocaleString()}
+              onChange={(e) => mortgageInputHandler(e, "price")}
+            />
+            <TextField
+              id="rent-input"
+              label="Monthly rent"
+              variant="standard"
+              defaultValue={mortageParams.rent.toLocaleString()}
+              onChange={(e) => mortgageInputHandler(e, "rent")}
+            />
+            <TextField
+              id="monthly-expense-input"
+              label="Monthly expense"
+              variant="standard"
+              defaultValue={mortageParams.monthly_expenses.toLocaleString()}
+              onChange={(e) => mortgageInputHandler(e, "monthly_expenses")}
+            />
+            <TextField
+              id="down-payment-input"
+              label="Down payment"
+              variant="standard"
+              defaultValue={mortageParams.down_payment.toLocaleString()}
+              onChange={(e) => mortgageInputHandler(e, "down_payment")}
+            />
+            <TextField
+              id="appreciation-input"
+              label="Appreciation"
+              variant="standard"
+              defaultValue={mortageParams.appreciation}
+              onChange={(e) => mortgageInputHandler(e, "appreciation")}
+            />
+            <TextField
+              id="interest-rate-input"
+              label="Interest rate"
+              variant="standard"
+              defaultValue={mortageParams.interest_rate}
+              onChange={(e) => mortgageInputHandler(e, "interest_rate")}
+            />
+            <TextField
+              id="mortgage-duration-input"
+              label="Mortgage duration"
+              variant="standard"
+              defaultValue={mortageParams.mortgage_duration}
+              onChange={(e) => mortgageInputHandler(e, "mortgage_duration")}
+            />
+            <TextField
+              id="roi-duration-input"
+              label="ROI duration"
+              variant="standard"
+              defaultValue={mortageParams.ROI_duration}
+              onChange={(e) => mortgageInputHandler(e, "ROI_duration")}
+            />
+          </Box>
+          {mortageProps && (
+            <Box p="15px">
+              <TableContainer component={Paper}>
+                <Table size="small" aria-label="a dense table">
+                  <TableBody>
+                    <TableRow
+                      key={"Starting Debt"}
+                      sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                    >
+                      <TableCell>Starting Debt</TableCell>
+                      <TableCell align="right">
+                        {mortageProps["starting_debt"].toLocaleString()}
+                      </TableCell>
+                    </TableRow>
+                    <TableRow
+                      key={"Monthly Payment"}
+                      sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                    >
+                      <TableCell>Monthly Payment</TableCell>
+                      <TableCell align="right">
+                        {mortageProps["monthly_payment"].toLocaleString()}
+                      </TableCell>
+                    </TableRow>
+                    <TableRow
+                      key={"Avg Monthly Principal"}
+                      sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                    >
+                      <TableCell>Avg Monthly Principal</TableCell>
+                      <TableCell align="right">
+                        {mortageProps["avg_monthly_principal"].toLocaleString()}
+                      </TableCell>
+                    </TableRow>
+                    <TableRow
+                      key={"Avg Monthly Interest"}
+                      sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                    >
+                      <TableCell>Avg Monthly Interest</TableCell>
+                      <TableCell align="right">
+                        {mortageProps["avg_monthly_interest"].toLocaleString()}
+                      </TableCell>
+                    </TableRow>
+                    <TableRow
+                      key={"Gross Yield"}
+                      sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                    >
+                      <TableCell>Gross Yield</TableCell>
+                      <TableCell align="right">
+                        {mortageProps["gross_yield"].toLocaleString(undefined, {
+                          style: "percent",
+                          minimumFractionDigits: 2,
+                        })}
+                      </TableCell>
+                    </TableRow>
+                    <TableRow
+                      key={"Monthly Cash Flow"}
+                      sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                    >
+                      <TableCell>Monthly Cash Flow</TableCell>
+                      <TableCell align="right">
+                        {mortageProps["monthly_cash_flow"].toLocaleString()}
+                      </TableCell>
+                    </TableRow>
+                    <TableRow
+                      key={"Cash On Cash Return"}
+                      sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                    >
+                      <TableCell>Cash On Cash Return</TableCell>
+                      <TableCell align="right">
+                        {mortageProps["cash_on_cash_return"].toLocaleString(
+                          undefined,
+                          { style: "percent", minimumFractionDigits: 2 }
+                        )}
+                      </TableCell>
+                    </TableRow>
+                    <TableRow
+                      key={"Equity"}
+                      sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                    >
+                      <TableCell>Equity</TableCell>
+                      <TableCell align="right">
+                        {mortageProps["equity"].toLocaleString(undefined, {
+                          style: "percent",
+                          minimumFractionDigits: 2,
+                        })}
+                      </TableCell>
+                    </TableRow>
+                    <TableRow
+                      key={"ROI On Duration"}
+                      sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                    >
+                      <TableCell>ROI On Duration</TableCell>
+                      <TableCell align="right">
+                        {mortageProps["ROI_on_duration"].toLocaleString(
+                          undefined,
+                          { style: "percent", minimumFractionDigits: 2 }
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </TableContainer>
             </Box>
-          ))}
+          )}
         </Box>
       </Box>
     </Box>

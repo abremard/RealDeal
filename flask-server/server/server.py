@@ -94,11 +94,11 @@ def calculate_mortgage():
     monthly_payment = starting_debt/(12*mortgage_duration)
     avg_monthly_principal = (price-down_payment)/(12*mortgage_duration)
     avg_monthly_interest = monthly_payment - avg_monthly_principal
-    gross_yield = rent * 12 * 100 / price
+    gross_yield = rent * 12 / price
     BP_cash_flow = rent-monthly_expenses-avg_monthly_interest
     monthly_cash_flow = rent-monthly_expenses-monthly_payment
     cash_on_cash_return = BP_cash_flow * 12 / down_payment
-    equity = down_payment * 100 / price
+    equity = down_payment / price
     ROI_on_duration = (price*(pow(1+appreciation, ROI_duration/12)-1) + BP_cash_flow*ROI_duration) / (down_payment + monthly_payment*ROI_duration + monthly_expenses*ROI_duration)
     
     response = flask.jsonify([
