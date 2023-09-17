@@ -75,6 +75,42 @@ def single_demography():
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
 
+@app.route("/mortgage", methods=['GET'])
+def calculate_mortgage():
+    args = request.args
+    # params
+    price = float(args.get("price"))
+    rent = float(args.get("rent"))
+    monthly_expenses = float(args.get("monthly_expenses"))
+    down_payment = float(args.get("down_payment"))
+    appreciation = float(args.get("appreciation"))
+    interest_rate = float(args.get("interest_rate"))
+    mortgage_duration = int(args.get("mortgage_duration"))
+    ROI_duration = int(args.get("ROI_duration"))
+    
+    # calculated properties
+    interest_coeff = (interest_rate*pow(1+interest_rate, mortgage_duration)/(pow(1+interest_rate, mortgage_duration)-1))
+    starting_debt = mortgage_duration*(price-down_payment)*interest_coeff
+    monthly_payment = starting_debt/(12*mortgage_duration)
+    avg_monthly_principal = (price-down_payment)/(12*mortgage_duration)
+    avg_monthly_interest = monthly_payment - avg_monthly_principal
+    gross_yield = rent * 12 * 100 / price
+    BP_cash_flow = rent-monthly_expenses-avg_monthly_interest
+    monthly_cash_flow = rent-monthly_expenses-monthly_payment
+    cash_on_cash_return = BP_cash_flow * 12 / down_payment
+    equity = down_payment * 100 / price
+    ROI_on_duration = (price*(pow(1+appreciation, ROI_duration/12)-1) + BP_cash_flow*ROI_duration) / (down_payment + monthly_payment*ROI_duration + monthly_expenses*ROI_duration)
+    
+    response = flask.jsonify([
+        {"price": price, "rent": rent, "monthly_expenses": monthly_expenses, "down_payment": down_payment,
+         "appreciation": appreciation, "interest_rate": interest_rate, "mortgage_duration": mortgage_duration, "ROI_duration": ROI_duration,
+         "starting_debt": starting_debt, "monthly_payment": monthly_payment, "avg_monthly_principal": avg_monthly_principal, 
+         "avg_monthly_interest": avg_monthly_interest, "gross_yield": gross_yield, "monthly_cash_flow": monthly_cash_flow, 
+         "cash_on_cash_return": cash_on_cash_return, "equity": equity, "ROI_on_duration": ROI_on_duration
+         }])
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
+
 def build_min_max_filters(dataset, filters, args, params_dict):
     for param in params_dict:
         filters = build_min_max_filter(dataset, filters, args, param['db_key'], param['min_param'], param['max_param'])
