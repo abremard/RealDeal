@@ -44,6 +44,7 @@ const Condominium = () => {
   const [bkkDemography, setBkkDemography] = useState([]);
   const [demography, setDemography] = useState([]);
   const [condoId, setCondoId] = useState(1);
+  const [mortageProps, setMortgageProps] = useState({});
 
   let inputHandler = (e) => {
     const selectedCondo = e.target.innerText;
@@ -117,6 +118,43 @@ const Condominium = () => {
         console.log(err.message);
       });
   }, []);
+  useEffect(() => {
+    const price = 11500000;
+    const rent = 35000;
+    const monthly_expenses = 17500;
+    const down_payment = 500000;
+    const appreciation = 0.04;
+    const interest_rate = 0.05;
+    const mortgage_duration = 30;
+    const ROI_duration = 12;
+
+    fetch(
+      "http://localhost:5000/mortgage?price=" +
+        price +
+        "&rent=" +
+        rent +
+        "&monthly_expenses=" +
+        monthly_expenses +
+        "&down_payment=" +
+        down_payment +
+        "&appreciation=" +
+        appreciation +
+        "&interest_rate=" +
+        interest_rate +
+        "&mortgage_duration=" +
+        mortgage_duration +
+        "&ROI_duration=" +
+        ROI_duration
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        setMortgageProps(data[0]);
+      })
+      .catch((err) => {
+        console.log(err.message);
+      });
+  }, []);
+  console.log(mortageProps);
 
   const computeDiff = (data, sliceStart = 0, sliceEnd = 100) => {
     if (data.length > 0) {
