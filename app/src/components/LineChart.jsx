@@ -60,7 +60,8 @@ const LineChart = ({ data, isDashboard = false }) => {
         orient: "bottom",
         tickSize: 0,
         tickPadding: 5,
-        tickRotation: 90,
+        tickRotation: 0,
+        tickValues: [6001, 6101, 6201, 6301, 6401, 6501],
         legend: isDashboard ? undefined : "transportation", // added
         legendOffset: 36,
         legendPosition: "middle",
