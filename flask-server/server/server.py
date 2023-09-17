@@ -13,12 +13,24 @@ district_mapper = None
 
 @app.route("/properties/all", methods=['GET'])
 def all_properties():
-    return build_response_body(load_dataset(CONDO_DATASET_PATH))
+    response = flask.jsonify(build_response_body(load_dataset(CONDO_DATASET_PATH).reset_index()[["Condo_NAME_EN", "ID"]].rename(columns={'Condo_NAME_EN': 'label', 'ID': 'id'})
+))
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
+
+@app.route("/properties/<id>", methods=['GET'])
+def property_by_id(id):
+    id = request.view_args['id']
+    dataset = load_dataset(CONDO_DATASET_PATH).reset_index()
+    dataset = dataset[dataset['ID'] == int(id)]
+    response = flask.jsonify(build_response_body(dataset))
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
 
 @app.route("/properties", methods=['GET'])
-def single_property():
+def property_search():
     args = request.args
-    dataset = load_dataset(CONDO_DATASET_PATH)
+    dataset = load_dataset(CONDO_DATASET_PATH).reset_index()
     filters = True
     text_filters = False
     text_filters = build_text_filter(dataset, text_filters, args, 'Condo_area', 'search')
