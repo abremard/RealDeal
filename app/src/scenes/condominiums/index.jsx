@@ -1,9 +1,7 @@
 /* eslint-disable jsx-a11y/alt-text */
 import { Box, Button, IconButton, Typography, useTheme } from "@mui/material";
 import { tokens } from "../../theme";
-import { mockLineData, mockTransactions } from "../../data/mockData";
-import InputBase from "@mui/material/InputBase";
-import SearchIcon from "@mui/icons-material/Search";
+import { mockTransactions } from "../../data/mockData";
 import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import QueryStatsIcon from "@mui/icons-material/QueryStats";
@@ -16,6 +14,8 @@ import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
+import TextField from "@mui/material/TextField";
+import Autocomplete from "@mui/material/Autocomplete";
 import React, { useState, useEffect } from "react";
 
 const Condominium = () => {
@@ -34,16 +34,23 @@ const Condominium = () => {
     "https://media.timeout.com/images/105458169/750/562/image.jpg",
   ];
 
-  const [property, setProperty] = useState(false);
+  // Add autocomplete to search and only allow sending valid search params to backend
+  // https://mui.com/material-ui/react-autocomplete/#search-input
+  // This should prevent blank page errors
+
+  const [propertyNames, setPropertyNames] = useState([]);
+  const [property, setProperty] = useState();
   const [edaProperties, setEdaProperties] = useState([]);
   const [bkkDemography, setBkkDemography] = useState([]);
   const [demography, setDemography] = useState([]);
+  const [condoId, setCondoId] = useState(1);
 
-  const [inputText, setInputText] = useState("Bang Kapi");
   let inputHandler = (e) => {
-    if (e.target.value.length > 2) {
-      setInputText(e.target.value);
-    }
+    const selectedCondo = e.target.innerText;
+    const selectedCondoId = propertyNames.filter(
+      (property) => property.label === selectedCondo
+    )[0].id;
+    setCondoId(selectedCondoId);
   };
 
   const [granularity, setGranularity] = React.useState("Condo_area");
@@ -52,7 +59,17 @@ const Condominium = () => {
   };
 
   useEffect(() => {
-    fetch("http://localhost:5000/properties?search=" + encodeURI(inputText))
+    fetch("http://localhost:5000/properties/all")
+      .then((response) => response.json())
+      .then((data) => {
+        setPropertyNames(data);
+      })
+      .catch((err) => {
+        console.log(err.message);
+      });
+  }, []);
+  useEffect(() => {
+    fetch("http://localhost:5000/properties/" + condoId)
       .then((response) => response.json())
       .then((data) => {
         setProperty(data[0]);
@@ -60,31 +77,35 @@ const Condominium = () => {
       .catch((err) => {
         console.log(err.message);
       });
-  }, [inputText]);
+  }, [condoId]);
   useEffect(() => {
-    const searchToken =
-      granularity === "City"
-        ? ""
-        : "?search=" + encodeURI(property[granularity]);
-    fetch("http://localhost:5000/properties" + searchToken)
-      .then((response) => response.json())
-      .then((data) => {
-        setEdaProperties(data);
-      })
-      .catch((err) => {
-        console.log(err.message);
-      });
+    if (property) {
+      const searchToken =
+        granularity === "City"
+          ? ""
+          : "?search=" + encodeURI(property[granularity]);
+      fetch("http://localhost:5000/properties" + searchToken)
+        .then((response) => response.json())
+        .then((data) => {
+          setEdaProperties(data);
+        })
+        .catch((err) => {
+          console.log(err.message);
+        });
+    }
   }, [property, granularity]);
   useEffect(() => {
-    const searchToken = "?district=" + encodeURI(property["Condo_area"]);
-    fetch("http://localhost:5000/demography" + searchToken)
-      .then((response) => response.json())
-      .then((data) => {
-        setDemography(data);
-      })
-      .catch((err) => {
-        console.log(err.message);
-      });
+    if (property) {
+      const searchToken = "?district=" + encodeURI(property["Condo_area"]);
+      fetch("http://localhost:5000/demography" + searchToken)
+        .then((response) => response.json())
+        .then((data) => {
+          setDemography(data);
+        })
+        .catch((err) => {
+          console.log(err.message);
+        });
+    }
   }, [property]);
   useEffect(() => {
     fetch("http://localhost:5000/demography/all")
@@ -95,7 +116,7 @@ const Condominium = () => {
       .catch((err) => {
         console.log(err.message);
       });
-  }, [property]);
+  }, []);
 
   const computeDiff = (data, sliceStart = 0, sliceEnd = 100) => {
     if (data.length > 0) {
@@ -109,18 +130,20 @@ const Condominium = () => {
     return data;
   };
 
-  const graph_data = [
-    {
-      id: "Bangkok",
-      color: tokens("dark").blueAccent[300],
-      data: computeDiff(bkkDemography, 40, 100),
-    },
-    {
-      id: property["Condo_area"],
-      color: tokens("dark").greenAccent[500],
-      data: computeDiff(demography, 40, 100),
-    },
-  ];
+  const graph_data = property
+    ? [
+        {
+          id: "Bangkok",
+          color: tokens("dark").blueAccent[300],
+          data: computeDiff(bkkDemography, 40, 100),
+        },
+        {
+          id: property["Condo_area"],
+          color: tokens("dark").greenAccent[500],
+          data: computeDiff(demography, 40, 100),
+        },
+      ]
+    : [];
 
   const randomNumberInRange = (min, max) => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -148,14 +171,16 @@ const Condominium = () => {
           borderRadius="3px"
           sx={{ width: "40%" }}
         >
-          <InputBase
-            sx={{ ml: 2, flex: 1 }}
-            placeholder="Search"
+          <Autocomplete
+            disablePortal
+            id="combo-box-demo"
+            options={propertyNames}
+            sx={{ width: "100%" }}
+            renderInput={(params) => (
+              <TextField {...params} label="Lumpini Ville Sukhumvit 77" />
+            )}
             onChange={inputHandler}
           />
-          <IconButton type="button" sx={{ p: 1 }}>
-            <SearchIcon />
-          </IconButton>
         </Box>
         <Box>
           <FormControl fullWidth>
