@@ -1,2 +1,5 @@
 /dataset
 /server/node_modules
+/ML/tuner
+/ML/data_scaler.joblib
+/ML/rf.joblib
