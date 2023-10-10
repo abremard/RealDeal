@@ -163,6 +163,6 @@ def build_response_body(dataframe):
     return loads(dataframe.to_json(orient="records", force_ascii=False))
 
 if __name__ == "__main__":
-    # demography_dataset = load_dataset(DEMOGRAPHY_DATASET_PATH, header=1, index_col=0)
-    # district_mapper = load_dataset(DISTRICT_MAPPER_PATH, index_col=False)
+    demography_dataset = load_dataset(DEMOGRAPHY_DATASET_PATH, header=1, index_col=0)
+    district_mapper = load_dataset(DISTRICT_MAPPER_PATH, index_col=False)
     app.run(debug=True)
