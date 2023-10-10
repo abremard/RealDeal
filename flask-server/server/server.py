@@ -2,6 +2,7 @@ from flask import Flask, request
 import pandas as pd 
 from json import loads
 import flask
+import joblib
 
 app = Flask(__name__)
 CONDO_DATASET_PATH = "../dataset/cleaned/bangkok-condo-dataset.csv"
@@ -111,6 +112,28 @@ def calculate_mortgage():
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
 
+@app.route("/prediction", methods=['POST'])
+def predict_sqm_price():
+    input_json = request.json
+    input_df = pd.DataFrame.from_dict(input_json)
+    new_area = pd.get_dummies(input_df['Condo_area'], dummy_na=True, prefix='Area_')
+    new_kind = pd.get_dummies(input_df['Kind'], dummy_na=True, prefix='Kind_')
+    new_road = pd.get_dummies(input_df['Road'], dummy_na=True, prefix='Road_')
+    input_df = pd.concat([input_df, new_area, new_kind, new_road], axis = 1)
+    input_df = input_df.drop('Condo_area', axis=1)
+    input_df = input_df.drop('Kind', axis=1)
+    input_df = input_df.drop('Road', axis=1)
+    scaler_model = joblib.load('../ML/data_scaler.joblib')
+    full_df = pd.DataFrame(columns=scaler_model.feature_names_in_)
+    full_df.loc[0] = input_df.iloc[0,:]
+    full_df = full_df.fillna(False)
+    X = scaler_model.transform(full_df)
+    rf_best_model = joblib.load('../ML/rf.joblib')
+    predictions = rf_best_model.predict(X)
+    response = flask.jsonify({"sqm_price": predictions[0]})
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
+
 def build_min_max_filters(dataset, filters, args, params_dict):
     for param in params_dict:
         filters = build_min_max_filter(dataset, filters, args, param['db_key'], param['min_param'], param['max_param'])
@@ -140,6 +163,6 @@ def build_response_body(dataframe):
     return loads(dataframe.to_json(orient="records", force_ascii=False))
 
 if __name__ == "__main__":
-    demography_dataset = load_dataset(DEMOGRAPHY_DATASET_PATH, header=1, index_col=0)
-    district_mapper = load_dataset(DISTRICT_MAPPER_PATH, index_col=False)
+    # demography_dataset = load_dataset(DEMOGRAPHY_DATASET_PATH, header=1, index_col=0)
+    # district_mapper = load_dataset(DISTRICT_MAPPER_PATH, index_col=False)
     app.run(debug=True)
