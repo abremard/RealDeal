@@ -3,8 +3,10 @@ import pandas as pd
 from json import loads
 import flask
 import joblib
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app, support_credentials=True)
 CONDO_DATASET_PATH = "../dataset/cleaned/bangkok-condo-dataset.csv"
 DEMOGRAPHY_DATASET_PATH = "../dataset/cleaned/demographic.csv"
 DISTRICT_MAPPER_PATH = "../dataset/cleaned/district_mapper.csv"
