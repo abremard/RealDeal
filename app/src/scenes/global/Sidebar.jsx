@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import "react-pro-sidebar/dist/css/styles.css";
 import { tokens } from "../../theme";
 import ApartmentIcon from "@mui/icons-material/Apartment";
+import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 import PsychologyIcon from "@mui/icons-material/Psychology";
 import PeopleOutlinedIcon from "@mui/icons-material/PeopleOutlined";
 import ContactsOutlinedIcon from "@mui/icons-material/ContactsOutlined";
@@ -128,6 +129,14 @@ const Sidebar = () => {
               title="AI"
               to="/ai"
               icon={<PsychologyIcon />}
+              selected={selected}
+              setSelected={setSelected}
+            />
+
+            <Item
+              title="NPA"
+              to="/npa"
+              icon={<AccountBalanceIcon />}
               selected={selected}
               setSelected={setSelected}
             />

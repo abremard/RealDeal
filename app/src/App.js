@@ -15,6 +15,7 @@ import { CssBaseline, ThemeProvider } from "@mui/material";
 import { ColorModeContext, useMode } from "./theme";
 import Calendar from "./scenes/calendar/calendar";
 import AI from "./scenes/ai/ai";
+import NPA from "./scenes/npa/npa";
 
 function App() {
   const [theme, colorMode] = useMode();
@@ -30,6 +31,7 @@ function App() {
             <Routes>
               <Route path="/" element={<Condominium />} />
               <Route path="/ai" element={<AI />} />
+              <Route path="/npa" element={<NPA />} />
               <Route path="/team" element={<Team />} />
               <Route path="/contacts" element={<Contacts />} />
               <Route path="/invoices" element={<Invoices />} />
