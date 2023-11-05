@@ -8,7 +8,7 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app, support_credentials=True)
 CONDO_DATASET_PATH = "../dataset/cleaned/bangkok-condo-dataset.csv"
-NPA_DATASET_PATH = "../dataset/npa/krungthai_2023-11-01.csv"
+NPA_DATASET_PATH = "../dataset/npa/krungthai_2023-11-04.csv"
 DEMOGRAPHY_DATASET_PATH = "../dataset/cleaned/demographic.csv"
 DISTRICT_MAPPER_PATH = "../dataset/cleaned/district_mapper.csv"
 
